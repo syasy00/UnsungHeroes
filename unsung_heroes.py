@@ -8,7 +8,6 @@ st.set_page_config(page_title="Unsung Heroes: PPS Relief Centers in Action", lay
 # --- Dashboard CSS: cards, KPIs, dark mode aware ---
 st.markdown("""
 <style>
-/* Dashboard header & card layout styles */
 .dashboard-title {
     font-size:2.3em; font-weight:900; letter-spacing:-1px; margin-bottom:0;
 }
@@ -106,7 +105,6 @@ filtered = df[
 # --- DASHBOARD HEADER ---
 st.markdown('<div class="dashboard-title">🦸‍♂️ Unsung Heroes: PPS Relief Centers in Action</div>', unsafe_allow_html=True)
 st.markdown('<div class="dashboard-subtitle">Real stories from the flood: Who sheltered the most? Who responded first? Where did evacuees come from—and where did they find safety?</div>', unsafe_allow_html=True)
-
 st.markdown(
     "<div class='card'>"
     "<b>This dashboard reveals the journey of evacuees during Malaysia's floods, highlighting <span style='color:#eab308'>hero</span> relief centers (PPS) and their impact across districts and time.</b>"
@@ -152,7 +150,7 @@ else:
         """, unsafe_allow_html=True
     )
 
-    # --- BAR + PIE (or other) ---
+    # --- BAR + PIE ---
     row2_col1, row2_col2 = st.columns([2,1])
     with row2_col1:
         st.markdown('<div class="card">', unsafe_allow_html=True)
@@ -167,7 +165,6 @@ else:
         st.markdown('</div>', unsafe_allow_html=True)
     with row2_col2:
         st.markdown('<div class="card">', unsafe_allow_html=True)
-        # Pie chart by category (example, change as you wish)
         cat_sum = filtered.groupby('KATEGORI')['JUMLAH'].sum().reset_index()
         fig_pie = px.pie(cat_sum, names='KATEGORI', values='JUMLAH', title="Category Share")
         st.plotly_chart(fig_pie, use_container_width=True)
@@ -185,25 +182,24 @@ else:
             filtered.loc[filtered['NAMA PPS'] == most_child_pps, 'HERO STATUS'] = 'Most Children/Infants'
         if earliest_pps and earliest_pps != "-":
             filtered.loc[filtered['NAMA PPS'] == earliest_pps, 'HERO STATUS'] = 'First to Open'
-       fig_map = px.scatter_map(
-    filtered,
-    lat='Latitude', lon='Longitude',
-    size='JUMLAH',
-    color='HERO STATUS',
-    hover_name='NAMA PPS',
-    hover_data={'JUMLAH':True, 'KATEGORI':True, 'DAERAH':True, 'MUKIM':True, 'HERO STATUS':True},
-    zoom=8,
-    height=500,
-    color_discrete_map={
-        'Regular': 'skyblue',
-        'Largest Center': 'orange',
-        'Most Children/Infants': 'red',
-        'First to Open': 'green'
-    },
-    **maplibre_style="carto-positron"**  # <-- Put style HERE!
-)
-fig_map.update_layout(margin={"r":0,"t":30,"l":0,"b":0})
-
+        fig_map = px.scatter_map(
+            filtered,
+            lat='Latitude', lon='Longitude',
+            size='JUMLAH',
+            color='HERO STATUS',
+            hover_name='NAMA PPS',
+            hover_data={'JUMLAH':True, 'KATEGORI':True, 'DAERAH':True, 'MUKIM':True, 'HERO STATUS':True},
+            zoom=8,
+            height=500,
+            color_discrete_map={
+                'Regular': 'skyblue',
+                'Largest Center': 'orange',
+                'Most Children/Infants': 'red',
+                'First to Open': 'green'
+            },
+            maplibre_style="carto-positron"
+        )
+        fig_map.update_layout(margin={"r":0,"t":30,"l":0,"b":0})
         st.plotly_chart(fig_map, use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
     with sankeycol:
