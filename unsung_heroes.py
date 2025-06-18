@@ -246,7 +246,7 @@ else:
                 sankey_fig.update_layout(title_text="", font_size=12, height=400)
                 st.plotly_chart(sankey_fig, use_container_width=True)
             else:
-                st.info("No data available to show district-to-PPS flow.")
+                st.info("Not enough data to show district-to-PPS flow for current filter.")
             st.markdown('</div>', unsafe_allow_html=True)
 
     # --- CATEGORY STACKED BAR + ARRIVAL TIMELINE ---
@@ -289,4 +289,3 @@ else:
         "</div>",
         unsafe_allow_html=True
     )
-
