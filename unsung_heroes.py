@@ -172,7 +172,7 @@ else:
 
     # --- MAP + SANKEY ---
     mapcol, sankeycol = st.columns([2,2])
-    with mapcol:
+        with mapcol:
         st.markdown('<div class="card">', unsafe_allow_html=True)
         st.markdown("**Hero PPS Centers and Their Locations**")
         filtered['HERO STATUS'] = 'Regular'
@@ -182,7 +182,7 @@ else:
             filtered.loc[filtered['NAMA PPS'] == most_child_pps, 'HERO STATUS'] = 'Most Children/Infants'
         if earliest_pps and earliest_pps != "-":
             filtered.loc[filtered['NAMA PPS'] == earliest_pps, 'HERO STATUS'] = 'First to Open'
-        fig_map = px.scatter_map(
+        fig_map = px.scatter_mapbox(
             filtered,
             lat='Latitude', lon='Longitude',
             size='JUMLAH',
@@ -197,11 +197,12 @@ else:
                 'Most Children/Infants': 'red',
                 'First to Open': 'green'
             },
-            maplibre_style="carto-positron"
+            mapbox_style="carto-positron"
         )
         fig_map.update_layout(margin={"r":0,"t":30,"l":0,"b":0})
         st.plotly_chart(fig_map, use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
+
     with sankeycol:
         st.markdown('<div class="card">', unsafe_allow_html=True)
         st.markdown("**How Districts Sent Evacuees to Relief Centers**")
