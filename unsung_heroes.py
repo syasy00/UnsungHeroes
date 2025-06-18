@@ -156,24 +156,18 @@ else:
     row2_col1, row2_col2 = st.columns([2,1])
     with row2_col1:
         if not filtered.empty:
-            st.markdown('<div class="card">', unsafe_allow_html=True)
-            
             pps_sum = filtered.groupby('NAMA PPS')['JUMLAH'].sum().sort_values(ascending=False).reset_index()
             fig_bar = px.bar(pps_sum.head(10), x='JUMLAH', y='NAMA PPS', orientation='h', labels={'JUMLAH': 'Total Evacuees', 'NAMA PPS': 'PPS'})
             fig_bar.update_layout(yaxis={'categoryorder':'total ascending'}, height=400)
             st.plotly_chart(fig_bar, use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.info("No data available to display Top 10 Relief Centers.")
 
     with row2_col2:
         if not filtered.empty:
-            st.markdown('<div class="card">', unsafe_allow_html=True)
-            
             cat_sum = filtered.groupby('KATEGORI')['JUMLAH'].sum().reset_index()
             fig_pie = px.pie(cat_sum, names='KATEGORI', values='JUMLAH', title="Category Share")
             st.plotly_chart(fig_pie, use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.info("No data available for category share.")
 
@@ -181,7 +175,6 @@ else:
     mapcol, sankeycol = st.columns([2,2])
     with mapcol:
         if not filtered.empty:
-            st.markdown('<div class="card">', unsafe_allow_html=True)
             st.markdown("**Hero PPS Centers and Their Locations**")
             filtered['HERO STATUS'] = 'Regular'
             if pps_max and pps_max != "-":
@@ -210,12 +203,10 @@ else:
             )
             fig_map.update_layout(margin={"r":0,"t":30,"l":0,"b":0})
             st.plotly_chart(fig_map, use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.info("No data available to display map.")
     with sankeycol:
         if not filtered.empty:
-            st.markdown('<div class="card">', unsafe_allow_html=True)
             st.markdown("**How Districts Sent Evacuees to Relief Centers**")
             sankey_data = filtered.groupby(['DAERAH', 'NAMA PPS'])['JUMLAH'].sum().reset_index()
             if not sankey_data.empty:
@@ -238,13 +229,11 @@ else:
                 st.plotly_chart(sankey_fig, use_container_width=True)
             else:
                 st.info("Not enough data to show district-to-PPS flow for current filter.")
-            st.markdown('</div>', unsafe_allow_html=True)
 
     # --- CATEGORY STACKED BAR + ARRIVAL TIMELINE ---
     demo_col, timeline_col = st.columns([2,2])
     with demo_col:
         if not filtered.empty:
-            st.markdown('<div class="card">', unsafe_allow_html=True)
             pps_demo = filtered.groupby(['NAMA PPS','KATEGORI'])['JUMLAH'].sum().reset_index()
             fig_demo = px.bar(
                 pps_demo, 
@@ -253,13 +242,11 @@ else:
                 color_discrete_sequence=px.colors.qualitative.Pastel
             )
             st.plotly_chart(fig_demo, use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.info("No data available to show demographic breakdown.")
 
     with timeline_col:
         if not filtered.empty:
-            st.markdown('<div class="card">', unsafe_allow_html=True)
             date_sum = filtered.groupby('TARIKH BUKA')['JUMLAH'].sum().reset_index()
             fig_line = px.line(
                 date_sum, 
@@ -268,7 +255,6 @@ else:
                 title=""
             )
             st.plotly_chart(fig_line, use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.info("No data available for timeline of arrivals.")
 
