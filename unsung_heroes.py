@@ -153,63 +153,61 @@ else:
     # --- BAR + PIE ---
     row2_col1, row2_col2 = st.columns([2,1])
     with row2_col1:
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        pps_sum = filtered.groupby('NAMA PPS')['JUMLAH'].sum().sort_values(ascending=False).reset_index()
-        fig_bar = px.bar(
-            pps_sum.head(10),
-            x='JUMLAH', y='NAMA PPS', orientation='h',
-            labels={'JUMLAH': 'Total Evacuees', 'NAMA PPS': 'PPS'}
-        )
-        fig_bar.update_layout(yaxis={'categoryorder':'total ascending'}, height=400)
-        st.plotly_chart(fig_bar, use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        if not pps_sum.empty:  # Check if data exists for bar chart
+            st.markdown('<div class="card">', unsafe_allow_html=True)
+            fig_bar = px.bar(
+                pps_sum.head(10),
+                x='JUMLAH', y='NAMA PPS', orientation='h',
+                labels={'JUMLAH': 'Total Evacuees', 'NAMA PPS': 'PPS'}
+            )
+            fig_bar.update_layout(yaxis={'categoryorder':'total ascending'}, height=400)
+            st.plotly_chart(fig_bar, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            st.info("No data available to display Top 10 Relief Centers.")
+
     with row2_col2:
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        cat_sum = filtered.groupby('KATEGORI')['JUMLAH'].sum().reset_index()
-        fig_pie = px.pie(cat_sum, names='KATEGORI', values='JUMLAH', title="Category Share")
-        st.plotly_chart(fig_pie, use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        if not cat_sum.empty:  # Check if data exists for pie chart
+            st.markdown('<div class="card">', unsafe_allow_html=True)
+            fig_pie = px.pie(cat_sum, names='KATEGORI', values='JUMLAH', title="Category Share")
+            st.plotly_chart(fig_pie, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            st.info("No data available for category share.")
 
     # --- MAP + SANKEY ---
     mapcol, sankeycol = st.columns([2,2])
     with mapcol:
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown("**Hero PPS Centers and Their Locations**")
-        filtered['HERO STATUS'] = 'Regular'
-        if pps_max and pps_max != "-":
-            filtered.loc[filtered['NAMA PPS'] == pps_max, 'HERO STATUS'] = 'Largest Center'
-        if most_child_pps and most_child_pps != "-":
-            filtered.loc[filtered['NAMA PPS'] == most_child_pps, 'HERO STATUS'] = 'Most Children/Infants'
-        if earliest_pps and earliest_pps != "-":
-            filtered.loc[filtered['NAMA PPS'] == earliest_pps, 'HERO STATUS'] = 'First to Open'
-        fig_map = px.scatter_mapbox(
-            filtered,
-            lat='Latitude', lon='Longitude',
-            size='JUMLAH',
-            color='HERO STATUS',
-            hover_name='NAMA PPS',
-            hover_data={'JUMLAH':True, 'KATEGORI':True, 'DAERAH':True, 'MUKIM':True, 'HERO STATUS':True},
-            zoom=8,
-            height=500,
-            color_discrete_map={
-                'Regular': 'skyblue',
-                'Largest Center': 'orange',
-                'Most Children/Infants': 'red',
-                'First to Open': 'green'
-            },
-            mapbox_style="carto-positron"
-        )
-        fig_map.update_layout(margin={"r":0,"t":30,"l":0,"b":0})
-        st.plotly_chart(fig_map, use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        if not filtered.empty:  # Ensure data exists for map
+            st.markdown('<div class="card">', unsafe_allow_html=True)
+            st.markdown("**Hero PPS Centers and Their Locations**")
+            fig_map = px.scatter_mapbox(
+                filtered,
+                lat='Latitude', lon='Longitude',
+                size='JUMLAH',
+                color='HERO STATUS',
+                hover_name='NAMA PPS',
+                hover_data={'JUMLAH':True, 'KATEGORI':True, 'DAERAH':True, 'MUKIM':True, 'HERO STATUS':True},
+                zoom=8,
+                height=500,
+                color_discrete_map={
+                    'Regular': 'skyblue',
+                    'Largest Center': 'orange',
+                    'Most Children/Infants': 'red',
+                    'First to Open': 'green'
+                },
+                mapbox_style="carto-positron"
+            )
+            fig_map.update_layout(margin={"r":0,"t":30,"l":0,"b":0})
+            st.plotly_chart(fig_map, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            st.info("No data available to display map.")
 
     with sankeycol:
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown("**How Districts Sent Evacuees to Relief Centers**")
-        sankey_data = filtered.groupby(['DAERAH', 'NAMA PPS'])['JUMLAH'].sum().reset_index()
-        if not sankey_data.empty:
-            labels = list(pd.concat([sankey_data['DAERAH'], sankey_data['NAMA PPS']]).unique())
-            label_indices = {label: i for i, label in enumerate(labels)}
+        if not sankey_data.empty:  # Ensure data exists for Sankey chart
+            st.markdown('<div class="card">', unsafe_allow_html=True)
+            st.markdown("**How Districts Sent Evacuees to Relief Centers**")
             sankey_fig = go.Figure(go.Sankey(
                 node=dict(
                     pad=15,
@@ -225,36 +223,39 @@ else:
             ))
             sankey_fig.update_layout(title_text="", font_size=12, height=400)
             st.plotly_chart(sankey_fig, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
         else:
-            st.info("Not enough data to show district-to-PPS flow for current filter.")
-        st.markdown('</div>', unsafe_allow_html=True)
+            st.info("No data available to show district-to-PPS flow.")
 
     # --- CATEGORY STACKED BAR + ARRIVAL TIMELINE ---
     demo_col, timeline_col = st.columns([2,2])
     with demo_col:
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown("**Who Did the PPS Serve? (Breakdown by Category)**")
-        pps_demo = filtered.groupby(['NAMA PPS','KATEGORI'])['JUMLAH'].sum().reset_index()
-        fig_demo = px.bar(
-            pps_demo, 
-            x='NAMA PPS', y='JUMLAH', color='KATEGORI',
-            labels={'JUMLAH':'Total Evacuees', 'NAMA PPS':'PPS'},
-            color_discrete_sequence=px.colors.qualitative.Pastel
-        )
-        st.plotly_chart(fig_demo, use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        if not pps_demo.empty:  # Ensure data exists for bar chart
+            st.markdown('<div class="card">', unsafe_allow_html=True)
+            fig_demo = px.bar(
+                pps_demo, 
+                x='NAMA PPS', y='JUMLAH', color='KATEGORI',
+                labels={'JUMLAH':'Total Evacuees', 'NAMA PPS':'PPS'},
+                color_discrete_sequence=px.colors.qualitative.Pastel
+            )
+            st.plotly_chart(fig_demo, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            st.info("No data available to show demographic breakdown.")
+
     with timeline_col:
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown("**When Did People Arrive? (Timeline of Arrivals)**")
-        date_sum = filtered.groupby('TARIKH BUKA')['JUMLAH'].sum().reset_index()
-        fig_line = px.line(
-            date_sum, 
-            x='TARIKH BUKA', y='JUMLAH',
-            labels={'TARIKH BUKA':'Date Opened', 'JUMLAH':'Total Evacuees'},
-            title=""
-        )
-        st.plotly_chart(fig_line, use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        if not date_sum.empty:  # Ensure data exists for line chart
+            st.markdown('<div class="card">', unsafe_allow_html=True)
+            fig_line = px.line(
+                date_sum, 
+                x='TARIKH BUKA', y='JUMLAH',
+                labels={'TARIKH BUKA':'Date Opened', 'JUMLAH':'Total Evacuees'},
+                title=""
+            )
+            st.plotly_chart(fig_line, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            st.info("No data available for timeline of arrivals.")
 
     # --- Final Info Card ---
     st.markdown(
@@ -264,4 +265,3 @@ else:
         "</div>",
         unsafe_allow_html=True
     )
-
