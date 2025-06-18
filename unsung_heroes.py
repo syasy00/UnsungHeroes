@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 st.set_page_config(page_title="Unsung Heroes: PPS Relief Centers in Action", layout="wide")
 
 # --- Load data ---
-df = pd.read_csv('/Users/nursyasyaaina/Desktop/DATA_BANJIR_CLEANED.csv', parse_dates=['TARIKH BUKA'])
+df = pd.read_csv('DATA_BANJIR_CLEANED.csv', parse_dates=['TARIKH BUKA'])
 
 # --- Session state for select-all/reset logic ---
 if "kategori_selected" not in st.session_state:
