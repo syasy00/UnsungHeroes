@@ -170,7 +170,7 @@ else:
             st.plotly_chart(fig_pie, use_container_width=True)
         else:
             st.info("No data available for category share.")
-
+    
     # --- MAP + SANKEY ---
     mapcol, sankeycol = st.columns([2,2])
     with mapcol:
@@ -205,6 +205,7 @@ else:
             st.plotly_chart(fig_map, use_container_width=True)
         else:
             st.info("No data available to display map.")
+    
     with sankeycol:
         if not filtered.empty:
             st.markdown("**How Districts Sent Evacuees to Relief Centers**")
@@ -266,3 +267,4 @@ else:
         "</div>",
         unsafe_allow_html=True
     )
+
