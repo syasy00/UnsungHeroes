@@ -153,8 +153,13 @@ else:
     # --- BAR + PIE ---
     row2_col1, row2_col2 = st.columns([2,1])
     with row2_col1:
-        if not pps_sum.empty:  # Check if data exists for bar chart
+        if not filtered.empty:  # Ensure data exists for bar chart
             st.markdown('<div class="card">', unsafe_allow_html=True)
+            
+            # Aggregating the data for PPS
+            pps_sum = filtered.groupby('NAMA PPS')['JUMLAH'].sum().sort_values(ascending=False).reset_index()
+            
+            # Creating the bar chart
             fig_bar = px.bar(
                 pps_sum.head(10),
                 x='JUMLAH', y='NAMA PPS', orientation='h',
@@ -167,8 +172,13 @@ else:
             st.info("No data available to display Top 10 Relief Centers.")
 
     with row2_col2:
-        if not cat_sum.empty:  # Check if data exists for pie chart
+        if not filtered.empty:  # Ensure data exists for pie chart
             st.markdown('<div class="card">', unsafe_allow_html=True)
+            
+            # Aggregating data for category share
+            cat_sum = filtered.groupby('KATEGORI')['JUMLAH'].sum().reset_index()
+            
+            # Creating the pie chart
             fig_pie = px.pie(cat_sum, names='KATEGORI', values='JUMLAH', title="Category Share")
             st.plotly_chart(fig_pie, use_container_width=True)
             st.markdown('</div>', unsafe_allow_html=True)
@@ -181,6 +191,14 @@ else:
         if not filtered.empty:  # Ensure data exists for map
             st.markdown('<div class="card">', unsafe_allow_html=True)
             st.markdown("**Hero PPS Centers and Their Locations**")
+            filtered['HERO STATUS'] = 'Regular'
+            if pps_max and pps_max != "-":
+                filtered.loc[filtered['NAMA PPS'] == pps_max, 'HERO STATUS'] = 'Largest Center'
+            if most_child_pps and most_child_pps != "-":
+                filtered.loc[filtered['NAMA PPS'] == most_child_pps, 'HERO STATUS'] = 'Most Children/Infants'
+            if earliest_pps and earliest_pps != "-":
+                filtered.loc[filtered['NAMA PPS'] == earliest_pps, 'HERO STATUS'] = 'First to Open'
+            
             fig_map = px.scatter_mapbox(
                 filtered,
                 lat='Latitude', lon='Longitude',
@@ -205,33 +223,38 @@ else:
             st.info("No data available to display map.")
 
     with sankeycol:
-        if not sankey_data.empty:  # Ensure data exists for Sankey chart
+        if not filtered.empty:  # Ensure data exists for Sankey chart
             st.markdown('<div class="card">', unsafe_allow_html=True)
             st.markdown("**How Districts Sent Evacuees to Relief Centers**")
-            sankey_fig = go.Figure(go.Sankey(
-                node=dict(
-                    pad=15,
-                    thickness=15,
-                    line=dict(color="black", width=0.5),
-                    label=labels,
-                ),
-                link=dict(
-                    source=[label_indices[d] for d in sankey_data['DAERAH']],
-                    target=[label_indices[p] for p in sankey_data['NAMA PPS']],
-                    value=sankey_data['JUMLAH']
-                )
-            ))
-            sankey_fig.update_layout(title_text="", font_size=12, height=400)
-            st.plotly_chart(sankey_fig, use_container_width=True)
+            sankey_data = filtered.groupby(['DAERAH', 'NAMA PPS'])['JUMLAH'].sum().reset_index()
+            if not sankey_data.empty:
+                labels = list(pd.concat([sankey_data['DAERAH'], sankey_data['NAMA PPS']]).unique())
+                label_indices = {label: i for i, label in enumerate(labels)}
+                sankey_fig = go.Figure(go.Sankey(
+                    node=dict(
+                        pad=15,
+                        thickness=15,
+                        line=dict(color="black", width=0.5),
+                        label=labels,
+                    ),
+                    link=dict(
+                        source=[label_indices[d] for d in sankey_data['DAERAH']],
+                        target=[label_indices[p] for p in sankey_data['NAMA PPS']],
+                        value=sankey_data['JUMLAH']
+                    )
+                ))
+                sankey_fig.update_layout(title_text="", font_size=12, height=400)
+                st.plotly_chart(sankey_fig, use_container_width=True)
+            else:
+                st.info("No data available to show district-to-PPS flow.")
             st.markdown('</div>', unsafe_allow_html=True)
-        else:
-            st.info("No data available to show district-to-PPS flow.")
 
     # --- CATEGORY STACKED BAR + ARRIVAL TIMELINE ---
     demo_col, timeline_col = st.columns([2,2])
     with demo_col:
-        if not pps_demo.empty:  # Ensure data exists for bar chart
+        if not filtered.empty:  # Ensure data exists for bar chart
             st.markdown('<div class="card">', unsafe_allow_html=True)
+            pps_demo = filtered.groupby(['NAMA PPS','KATEGORI'])['JUMLAH'].sum().reset_index()
             fig_demo = px.bar(
                 pps_demo, 
                 x='NAMA PPS', y='JUMLAH', color='KATEGORI',
@@ -244,8 +267,9 @@ else:
             st.info("No data available to show demographic breakdown.")
 
     with timeline_col:
-        if not date_sum.empty:  # Ensure data exists for line chart
+        if not filtered.empty:  # Ensure data exists for line chart
             st.markdown('<div class="card">', unsafe_allow_html=True)
+            date_sum = filtered.groupby('TARIKH BUKA')['JUMLAH'].sum().reset_index()
             fig_line = px.line(
                 date_sum, 
                 x='TARIKH BUKA', y='JUMLAH',
@@ -265,3 +289,4 @@ else:
         "</div>",
         unsafe_allow_html=True
     )
+
