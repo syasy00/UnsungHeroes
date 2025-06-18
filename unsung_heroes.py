@@ -185,23 +185,25 @@ else:
             filtered.loc[filtered['NAMA PPS'] == most_child_pps, 'HERO STATUS'] = 'Most Children/Infants'
         if earliest_pps and earliest_pps != "-":
             filtered.loc[filtered['NAMA PPS'] == earliest_pps, 'HERO STATUS'] = 'First to Open'
-        fig_map = px.scatter_map(
-            filtered,
-            lat='Latitude', lon='Longitude',
-            size='JUMLAH',
-            color='HERO STATUS',
-            hover_name='NAMA PPS',
-            hover_data={'JUMLAH':True, 'KATEGORI':True, 'DAERAH':True, 'MUKIM':True, 'HERO STATUS':True},
-            zoom=8,
-            height=400,
-            color_discrete_map={
-                'Regular': 'skyblue',
-                'Largest Center': 'orange',
-                'Most Children/Infants': 'red',
-                'First to Open': 'green'
-            }
-        )
-        fig_map.update_layout(maplibre_style="carto-positron", margin={"r":0,"t":30,"l":0,"b":0})
+       fig_map = px.scatter_map(
+    filtered,
+    lat='Latitude', lon='Longitude',
+    size='JUMLAH',
+    color='HERO STATUS',
+    hover_name='NAMA PPS',
+    hover_data={'JUMLAH':True, 'KATEGORI':True, 'DAERAH':True, 'MUKIM':True, 'HERO STATUS':True},
+    zoom=8,
+    height=500,
+    color_discrete_map={
+        'Regular': 'skyblue',
+        'Largest Center': 'orange',
+        'Most Children/Infants': 'red',
+        'First to Open': 'green'
+    },
+    **maplibre_style="carto-positron"**  # <-- Put style HERE!
+)
+fig_map.update_layout(margin={"r":0,"t":30,"l":0,"b":0})
+
         st.plotly_chart(fig_map, use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
     with sankeycol:
