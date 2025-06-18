@@ -172,44 +172,47 @@ else:
 
     # --- MAP + SANKEY ---
     mapcol, sankeycol = st.columns([2,2])
-    with mapcol:
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown("**Hero PPS Centers and Their Locations**")
-        filtered['HERO STATUS'] = 'Regular'
-        if pps_max and pps_max != "-":
-            filtered.loc[filtered['NAMA PPS'] == pps_max, 'HERO STATUS'] = 'Largest Center'
-        if most_child_pps and most_child_pps != "-":
-            filtered.loc[filtered['NAMA PPS'] == most_child_pps, 'HERO STATUS'] = 'Most Children/Infants'
-        if earliest_pps and earliest_pps != "-":
-            filtered.loc[filtered['NAMA PPS'] == earliest_pps, 'HERO STATUS'] = 'First to Open'
-        fig_map = px.scatter_mapbox(
-            filtered,
-            lat='Latitude', lon='Longitude',
-            size='JUMLAH',
-            color='HERO STATUS',
-            hover_name='NAMA PPS',
-            hover_data={'JUMLAH':True, 'KATEGORI':True, 'DAERAH':True, 'MUKIM':True, 'HERO STATUS':True},
-            zoom=8,
-            height=500,
-            color_discrete_map={
-                'Regular': 'skyblue',
-                'Largest Center': 'orange',
-                'Most Children/Infants': 'red',
-                'First to Open': 'green'
-            },
-            mapbox_style="carto-positron"
-        )
-        fig_map.update_layout(margin={"r":0,"t":30,"l":0,"b":0})
-        st.plotly_chart(fig_map, use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
 
-    with sankeycol:
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown("**How Districts Sent Evacuees to Relief Centers**")
-        sankey_data = filtered.groupby(['DAERAH', 'NAMA PPS'])['JUMLAH'].sum().reset_index()
-        if not sankey_data.empty:
-            labels = list(pd.concat([sankey_data['DAERAH'], sankey_data['NAMA PPS']]).unique())
-            label_indices = {label: i for i, label in enumerate(labels)}
+    # Ensure you only create the map column if it has data
+    if not filtered[filtered['Latitude'].isna() & filtered['Longitude'].isna()].empty:
+        with mapcol:
+            st.markdown('<div class="card">', unsafe_allow_html=True)
+            st.markdown("**Hero PPS Centers and Their Locations**")
+            filtered['HERO STATUS'] = 'Regular'
+            if pps_max and pps_max != "-":
+                filtered.loc[filtered['NAMA PPS'] == pps_max, 'HERO STATUS'] = 'Largest Center'
+            if most_child_pps and most_child_pps != "-":
+                filtered.loc[filtered['NAMA PPS'] == most_child_pps, 'HERO STATUS'] = 'Most Children/Infants'
+            if earliest_pps and earliest_pps != "-":
+                filtered.loc[filtered['NAMA PPS'] == earliest_pps, 'HERO STATUS'] = 'First to Open'
+            fig_map = px.scatter_mapbox(
+                filtered,
+                lat='Latitude', lon='Longitude',
+                size='JUMLAH',
+                color='HERO STATUS',
+                hover_name='NAMA PPS',
+                hover_data={'JUMLAH':True, 'KATEGORI':True, 'DAERAH':True, 'MUKIM':True, 'HERO STATUS':True},
+                zoom=8,
+                height=500,
+                color_discrete_map={
+                    'Regular': 'skyblue',
+                    'Largest Center': 'orange',
+                    'Most Children/Infants': 'red',
+                    'First to Open': 'green'
+                },
+                mapbox_style="carto-positron"
+            )
+            fig_map.update_layout(margin={"r":0,"t":30,"l":0,"b":0})
+            st.plotly_chart(fig_map, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+    else:
+        st.info("No data available for map visualization.")
+
+    # Ensure you only create the Sankey column if it has data
+    if not sankey_data.empty:
+        with sankeycol:
+            st.markdown('<div class="card">', unsafe_allow_html=True)
+            st.markdown("**How Districts Sent Evacuees to Relief Centers**")
             sankey_fig = go.Figure(go.Sankey(
                 node=dict(
                     pad=15,
@@ -225,9 +228,9 @@ else:
             ))
             sankey_fig.update_layout(title_text="", font_size=12, height=400)
             st.plotly_chart(sankey_fig, use_container_width=True)
-        else:
-            st.info("Not enough data to show district-to-PPS flow for current filter.")
-        st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+    else:
+        st.info("Not enough data to show district-to-PPS flow for current filter.")
 
     # --- CATEGORY STACKED BAR + ARRIVAL TIMELINE ---
     demo_col, timeline_col = st.columns([2,2])
@@ -264,4 +267,5 @@ else:
         "</div>",
         unsafe_allow_html=True
     )
+
 
