@@ -172,7 +172,7 @@ else:
 
     # --- MAP + SANKEY ---
     mapcol, sankeycol = st.columns([2,2])
-        with mapcol:
+    with mapcol:
         st.markdown('<div class="card">', unsafe_allow_html=True)
         st.markdown("**Hero PPS Centers and Their Locations**")
         filtered['HERO STATUS'] = 'Regular'
@@ -264,3 +264,4 @@ else:
         "</div>",
         unsafe_allow_html=True
     )
+
